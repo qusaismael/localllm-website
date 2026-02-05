@@ -74,7 +74,7 @@ OLLAMA_ORIGINS="*" ollama serve
 Option 2 (specific origin):
 
 ```bash
-OLLAMA_ORIGINS="https://locallm.qusai.pro" ollama serve
+OLLAMA_ORIGINS="https://localllm.qusai.pro" ollama serve
 ```
 
 Option 3 (persistent environment variable):
