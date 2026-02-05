@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local AI — Chat with Your Local LLM</title>
+  <meta name="description" content="Client-side web interface to chat with Ollama models running on your computer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="setup-screen" id="setupScreen">
+    <div class="setup-backdrop"></div>
+    <div class="setup-card">
+      <div class="setup-hero">
+        <div class="setup-logo">
+          <svg viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="28" stroke="url(#gradient1)" stroke-width="2"/>
+            <circle cx="32" cy="32" r="18" stroke="url(#gradient1)" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="32" cy="32" r="8" fill="url(#gradient1)"/>
+            <path d="M32 4v8M32 52v8M4 32h8M52 32h8" stroke="url(#gradient1)" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff6b6b"/>
+                <stop offset="50%" stop-color="#feca57"/>
+                <stop offset="100%" stop-color="#48dbfb"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1>Local AI</h1>
+        <p class="setup-tagline">Chat with AI running on your computer</p>
+      </div>
+
+      <div class="setup-steps" id="setupSteps">
+        <div class="setup-step active" data-step="1">
+          <div class="step-header">
+            <span class="step-number">1</span>
+            <h2>Connect to Ollama</h2>
+          </div>
+          <p class="step-desc">Enter the URL where Ollama is running on your computer. Usually it's the default below.</p>
+          
+          <div class="input-group">
+            <label for="ollamaUrlInput">Ollama URL</label>
+            <input type="text" id="ollamaUrlInput" value="http://localhost:11434" placeholder="http://localhost:11434">
+            <span class="input-hint">Make sure Ollama is running with CORS enabled</span>
+          </div>
+
+          <div class="connection-test" id="connectionTest">
+            <div class="test-status">
+              <span class="status-icon"></span>
+              <span class="status-text">Not tested yet</span>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button class="btn-primary" id="testConnection">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Test Connection
+            </button>
+          </div>
+
+          <div class="cors-help" id="corsHelp" style="display: none;">
+            <div class="help-card">
+              <h4>Connection failed?</h4>
+              <p>Ollama needs CORS enabled to work from a web browser. Start Ollama with:</p>
+              <div class="code-block">
+                <code id="corsCommand">OLLAMA_ORIGINS="*" ollama serve</code>
+                <button class="copy-btn" onclick="copyText('OLLAMA_ORIGINS=&quot;*&quot; ollama serve')">Copy</button>
+              </div>
+              <p class="help-note">On Windows, set the environment variable <code>OLLAMA_ORIGINS=*</code> before running Ollama.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Select or Download Model -->
+        <div class="setup-step" data-step="2">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <h2>Choose a Model</h2>
+          </div>
+          <p class="step-desc">Select an installed model or download a new one.</p>
+
+          <div class="model-tabs">
+            <button class="model-tab active" data-tab="installed">Installed</button>
+            <button class="model-tab" data-tab="download">Download New</button>
+          </div>
+
+          <!-- Installed Models Tab -->
+          <div class="model-tab-content active" id="installedTab">
+            <div class="models-list" id="modelsList">
+              <div class="loading-models">
+                <div class="spinner"></div>
+                <span>Loading models...</span>
+              </div>
+            </div>
+
+            <div class="no-models-hint" id="noModelsHint" style="display: none;">
+              <div class="empty-models-icon">📦</div>
+              <p>No models installed yet!</p>
+              <p class="hint-text">Switch to "Download New" tab to get your first model.</p>
+            </div>
+          </div>
+
+          <!-- Download Models Tab -->
+          <div class="model-tab-content" id="downloadTab">
+            <div class="download-categories">
+              <button class="category-btn active" data-category="recommended">⭐ Recommended</button>
+              <button class="category-btn" data-category="popular">🔥 Popular</button>
+              <button class="category-btn" data-category="coding">💻 Coding</button>
+            </div>
+
+            <div class="available-models" id="availableModels">
+              <!-- Populated by JS -->
+            </div>
+
+            <div class="download-progress-card" id="downloadProgressCard" style="display: none;">
+              <div class="download-info">
+                <span class="download-model-name"></span>
+                <span class="download-percent">0%</span>
+              </div>
+              <div class="download-bar">
+                <div class="download-fill"></div>
+              </div>
+              <p class="download-status">Starting download...</p>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button class="btn-secondary" id="backToStep1">Back</button>
+            <button class="btn-primary" id="startChatting" disabled>Select a model to continue</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-footer">
+        <p>100% private — your data stays on your computer</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="mainApp" style="display: none;">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="16" cy="16" r="4" fill="currentColor"/>
+          </svg>
+          <span>Local AI</span>
+        </div>
+        <button class="btn-new" id="newChat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg>
+          New Chat
+        </button>
+      </div>
+
+      <div class="sidebar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Search chats...">
+      </div>
+
+      <nav class="chat-list" id="chatList">
+        <!-- Populated by JS -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="connection-badge" id="connectionBadge">
+          <span class="dot"></span>
+          <span class="text">Connected</span>
+        </div>
+        <a
+          class="btn-github"
+          id="openGithub"
+          href="https://github.com/qusaismael/locallm-website"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="View source on GitHub"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 2C7.03 2 3 6.03 3 11c0 3.98 2.58 7.35 6.16 8.55.45.09.62-.2.62-.44 0-.22-.01-.94-.01-1.71-2.25.41-2.84-.55-3.02-1.06-.1-.26-.54-1.06-.92-1.27-.31-.17-.76-.6-.01-.61.7-.01 1.2.64 1.37.91.8 1.35 2.08.97 2.59.74.08-.58.31-.97.56-1.19-1.99-.23-4.08-1-4.08-4.42 0-.98.35-1.79.92-2.42-.09-.23-.4-1.15.09-2.39 0 0 .75-.24 2.45.92.71-.2 1.47-.3 2.23-.3.76 0 1.52.1 2.23.3 1.7-1.17 2.45-.92 2.45-.92.49 1.24.18 2.16.09 2.39.57.63.92 1.44.92 2.42 0 3.43-2.1 4.19-4.1 4.41.32.27.6.8.6 1.62 0 1.17-.01 2.11-.01 2.4 0 .24.17.53.62.44A8.999 8.999 0 0 0 21 11c0-4.97-4.03-9-9-9Z"/>
+          </svg>
+          <span class="btn-github-label">Source</span>
+        </a>
+        <button class="btn-settings" id="openSettings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4m-9-9h4m14 0h4"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <button class="btn-icon menu-toggle" id="menuToggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <h1 class="chat-title" id="chatTitle">New Chat</h1>
+        <div class="header-actions">
+          <select class="model-select" id="modelSelect">
+            <option value="">Select model</option>
+          </select>
+          <button class="btn-icon" id="manageModels" title="Manage Models">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="btn-icon" id="exportChat" title="Export">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button class="btn-icon danger" id="deleteChat" title="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon">
+            <svg viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <circle cx="32" cy="32" r="8" fill="currentColor" opacity="0.5"/>
+              <path d="M32 12v8M32 44v8M12 32h8M44 32h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+          </div>
+          <h2>Start a conversation</h2>
+          <p>Use a local model via Ollama</p>
+          <div class="quick-prompts">
+            <button class="quick-prompt" data-prompt="Explain how neural networks work in simple terms">
+              Explain neural networks
+            </button>
+            <button class="quick-prompt" data-prompt="Write a creative short story about time travel">
+              Write a story
+            </button>
+            <button class="quick-prompt" data-prompt="Help me debug my code">
+              Debug code
+            </button>
+            <button class="quick-prompt" data-prompt="Suggest 5 weekend project ideas">
+              Project ideas
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <form class="input-area" id="chatForm">
+        <div class="input-wrapper">
+          <textarea id="messageInput" placeholder="Type your message..." rows="1"></textarea>
+          <button type="submit" class="btn-send" id="sendBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-footer">
+          <span class="shortcut"><kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> new line</span>
+          <span class="model-badge" id="currentModelBadge"></span>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="btn-icon" id="closeSettings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label for="settingsOllamaUrl">Ollama URL</label>
+          <input type="text" id="settingsOllamaUrl" placeholder="http://localhost:11434">
+          <p class="setting-hint">The URL where your Ollama instance is running</p>
+        </div>
+        <div class="setting-group">
+          <label>Connection</label>
+          <div class="setting-status" id="settingsConnectionStatus">
+            <span class="dot"></span>
+            <span class="text">Checking...</span>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label>Data</label>
+          <button class="btn-danger-outline" id="clearAllData">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            Clear All Chats
+          </button>
+          <p class="setting-hint">This will delete all your chat history from this browser</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelSettings">Cancel</button>
+        <button class="btn-primary" id="saveSettings">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Manager Modal -->
+  <div class="modal" id="modelModal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2>Manage Models</h2>
+        <button class="btn-icon" id="closeModelModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="model-tabs">
+          <button class="model-tab active" data-tab="mm-installed">Installed</button>
+          <button class="model-tab" data-tab="mm-download">Download New</button>
+        </div>
+        
+        <div class="model-tab-content active" id="mmInstalledTab">
+          <div class="installed-models-list" id="installedModelsList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        
+        <div class="model-tab-content" id="mmDownloadTab">
+          <div class="download-categories">
+            <button class="category-btn active" data-category="recommended">⭐ Recommended</button>
+            <button class="category-btn" data-category="popular">🔥 Popular</button>
+            <button class="category-btn" data-category="coding">💻 Coding</button>
+          </div>
+          <div class="available-models-manager" id="availableModelsManager">
+            <!-- Populated by JS -->
+          </div>
+          <div class="download-progress-card" id="managerDownloadProgress" style="display: none;">
+            <div class="download-info">
+              <span class="download-model-name"></span>
+              <span class="download-percent">0%</span>
+            </div>
+            <div class="download-bar">
+              <div class="download-fill"></div>
+            </div>
+            <p class="download-status">Starting download...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
