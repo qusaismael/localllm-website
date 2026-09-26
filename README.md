@@ -23,24 +23,24 @@ Download and install Ollama from `https://ollama.com`.
 Mac/Linux:
 
 ```bash
-OLLAMA_ORIGINS="*" ollama serve
+OLLAMA_ORIGINS="https://localllm.qusai.pro" ollama serve
 ```
 
 Windows (PowerShell):
 
 ```powershell
-$env:OLLAMA_ORIGINS="*"; ollama serve
+$env:OLLAMA_ORIGINS="https://localllm.qusai.pro"; ollama serve
 ```
 
 Windows (CMD):
 
 ```cmd
-set OLLAMA_ORIGINS=* && ollama serve
+set OLLAMA_ORIGINS=https://localllm.qusai.pro && ollama serve
 ```
 
 ### 3. Open the web app
 
-Visit the hosted URL or open `index.html` locally.
+Visit `https://localllm.qusai.pro`. If you host this app elsewhere, configure Ollama for your site's exact origin instead.
 
 ### 4. Download a model
 
@@ -59,46 +59,40 @@ ollama pull llama3.2
 
 
 
-## Common Porblems
+## Common Problems
 
 ### CORS settings
 
-For the web app to communicate with your local Ollama, you must enable CORS.
+For the web app to communicate with your local Ollama, allow only the web app's origin. Keep Ollama bound to loopback; do not expose port 11434 publicly.
 
-Option 1 (recommended, any origin):
-
-```bash
-OLLAMA_ORIGINS="*" ollama serve
-```
-
-Option 2 (specific origin):
+Hosted site's origin:
 
 ```bash
 OLLAMA_ORIGINS="https://localllm.qusai.pro" ollama serve
 ```
 
-Option 3 (persistent environment variable):
+Persistent environment variable (replace this origin if you self-host):
 
 Mac/Linux (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
-export OLLAMA_ORIGINS="*"
+export OLLAMA_ORIGINS="https://localllm.qusai.pro"
 ```
 
-Windows: set a system environment variable `OLLAMA_ORIGINS=*`.
+Windows: set a system environment variable `OLLAMA_ORIGINS=https://localllm.qusai.pro`.
 
 ### Custom Ollama URL
 
-If Ollama is running on a different machine or port:
+If Ollama uses a different loopback port:
 
 1. Open the web app
-2. Enter the URL (for example `http://192.168.1.100:11434`)
+2. Enter its URL (for example `http://localhost:11435`)
 3. Click “Test Connection”
 
 **“Connection failed” error**
 
 1. Make sure Ollama is running: `ollama serve`
-2. Check that CORS is enabled: `OLLAMA_ORIGINS="*" ollama serve`
+2. Check that CORS is enabled: `OLLAMA_ORIGINS="https://localllm.qusai.pro" ollama serve`
 3. Try the default URL: `http://localhost:11434`
 
 **"No models found"**
