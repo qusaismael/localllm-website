@@ -67,10 +67,10 @@
               <h4>Connection failed?</h4>
               <p>Ollama needs CORS enabled to work from a web browser. Start Ollama with:</p>
               <div class="code-block">
-                <code id="corsCommand">OLLAMA_ORIGINS="*" ollama serve</code>
-                <button class="copy-btn" onclick="copyText('OLLAMA_ORIGINS=&quot;*&quot; ollama serve')">Copy</button>
+                <code id="corsCommand">OLLAMA_ORIGINS="https://localllm.qusai.pro" ollama serve</code>
+                <button class="copy-btn" onclick="copyText(document.getElementById('corsCommand').textContent)">Copy</button>
               </div>
-              <p class="help-note">On Windows, set the environment variable <code>OLLAMA_ORIGINS=*</code> before running Ollama.</p>
+              <p class="help-note">On Windows, set <code>OLLAMA_ORIGINS</code> to <code>https://localllm.qusai.pro</code> before running Ollama. For self-hosting, use your site's exact origin instead.</p>
             </div>
           </div>
         </div>
@@ -344,6 +344,7 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
+  <script src="ndjson.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

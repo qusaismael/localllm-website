@@ -254,40 +254,24 @@ async function pullModel(modelName, onProgress, onComplete, onError) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.trim());
-      
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line);
-          
-          if (data.total && data.completed) {
-            const percent = Math.round((data.completed / data.total) * 100);
-            onProgress(percent, data.status || 'Downloading...');
-          } else if (data.status) {
-            onProgress(null, data.status);
-          }
-          
-          if (data.status === 'success') {
-            state.isDownloading = false;
-            onComplete();
-            return;
-          }
-        } catch (e) {
-          // Ignore JSON parse errors
-        }
+    for await (const data of parseNdjson(response.body)) {
+      if (data.error) throw new Error(data.error);
+
+      if (data.total && data.completed) {
+        const percent = Math.round((data.completed / data.total) * 100);
+        onProgress(percent, data.status || 'Downloading...');
+      } else if (data.status) {
+        onProgress(null, data.status);
+      }
+
+      if (data.status === 'success') {
+        state.isDownloading = false;
+        onComplete();
+        return;
       }
     }
-    
-    state.isDownloading = false;
-    onComplete();
+
+    throw new Error('Model download ended before success');
     
   } catch (err) {
     state.isDownloading = false;
@@ -332,38 +316,27 @@ async function streamChat(messages, model, onChunk, onDone, onError) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
     let fullResponse = '';
     let stats = {};
-    
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.trim());
-      
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line);
-          
-          if (data.message && data.message.content) {
-            fullResponse += data.message.content;
-            onChunk(data.message.content, fullResponse);
-          }
-          
-          if (data.done) {
-            stats = {
-              total_duration: data.total_duration || 0,
-              eval_count: data.eval_count || 0,
-              eval_duration: data.eval_duration || 0
-            };
-          }
-        } catch (e) {}
+    let sawDone = false;
+
+    for await (const data of parseNdjson(response.body)) {
+      if (data.error) throw new Error(data.error);
+      if (data.message?.content) {
+        fullResponse += data.message.content;
+        onChunk(data.message.content, fullResponse);
+      }
+      if (data.done) {
+        sawDone = true;
+        stats = {
+          total_duration: data.total_duration || 0,
+          eval_count: data.eval_count || 0,
+          eval_duration: data.eval_duration || 0
+        };
       }
     }
-    
+    if (!sawDone) throw new Error('Chat ended before completion');
+
     const evalDurationSec = stats.eval_duration / 1e9;
     const tokensPerSec = evalDurationSec > 0 ? stats.eval_count / evalDurationSec : 0;
     const totalDurationSec = stats.total_duration / 1e9;
