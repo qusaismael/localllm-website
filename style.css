@@ -419,6 +419,7 @@ h1, h2, h3, h4 {
 
 .code-block {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--sp-3);
   background: #090c12;
@@ -429,14 +430,15 @@ h1, h2, h3, h4 {
 }
 
 .code-block code {
-  flex: 1;
+  flex: 1 1 220px;
   min-width: 0;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   line-height: 1.6;
   color: var(--accent-2);
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  overflow-x: auto;
 }
 
 .copy-btn {
@@ -488,6 +490,7 @@ h1, h2, h3, h4 {
   font-family: var(--font-sans);
   font-size: var(--fs-md);
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
@@ -585,7 +588,7 @@ h1, h2, h3, h4 {
   min-width: 0;
   font-weight: 500;
   color: var(--text-primary);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .model-size {
@@ -829,7 +832,7 @@ h1, h2, h3, h4 {
   font-weight: 500;
   color: var(--text-primary);
   margin-bottom: 2px;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .installed-model-meta {
@@ -2090,6 +2093,23 @@ h1, h2, h3, h4 {
 @media (max-width: 480px) {
   .setup-card {
     padding: var(--sp-6) var(--sp-5);
+  }
+
+  .help-card {
+    padding: var(--sp-4);
+  }
+
+  .code-block {
+    padding: var(--sp-3);
+  }
+
+  .model-tab {
+    padding: 0 var(--sp-2);
+  }
+
+  .model-option {
+    gap: var(--sp-2);
+    padding: var(--sp-3);
   }
 
   .setup-logo {
