@@ -1,40 +1,69 @@
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-tertiary: #1a1a25;
-  --bg-hover: #22222f;
-  
-  --text-primary: #f5f5f7;
-  --text-secondary: #a0a0b0;
-  --text-muted: #606070;
-  
+  /* Surfaces — cool graphite stack */
+  --bg-primary: #0d1017;
+  --bg-secondary: #121623;
+  --bg-tertiary: #1a2030;
+  --bg-hover: #242b3d;
+
+  /* Text */
+  --text-primary: #f2f5fa;
+  --text-secondary: #c9d0e0;
+  --text-muted: #8b94ab;
+  --text-faint: #767f95;
+
+  /* Brand — coral core with the spectral identity from the orbit mark */
   --accent-1: #ff6b6b;
-  --accent-2: #feca57;
-  --accent-3: #48dbfb;
-  --accent-gradient: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3));
-  
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(255, 255, 255, 0.12);
-  
-  --success: #2ed573;
-  --warning: #ffa502;
-  --danger: #ff4757;
-  
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --accent-2: #feda5e;
+  --accent-3: #4bdbfa;
+  --accent-gradient: linear-gradient(120deg, #ff6b6b 0%, #feda5e 55%, #4bdbfa 100%);
+  --accent-ink: #23090c;
+  --accent-soft: rgba(255, 107, 107, 0.12);
+
+  --border-color: rgba(255, 255, 255, 0.07);
+  --border-light: rgba(255, 255, 255, 0.14);
+
+  --success: #3ed598;
+  --warning: #ffb454;
+  --danger: #ff5a6e;
+  --danger-soft: rgba(255, 90, 110, 0.1);
+  --danger-line: rgba(255, 90, 110, 0.3);
+
+  /* Type scale — 1.125 minor third anchored at 16px */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-md: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+
+  /* Spacing — 4px rhythm */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
-  
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-  
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55);
+
   --sidebar-width: 280px;
-  --header-height: 60px;
-  
+  --header-height: 64px;
+
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: 'Fraunces', Georgia, serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 *, *::before, *::after {
@@ -52,15 +81,26 @@ html {
 body {
   font-family: var(--font-sans);
   background: var(--bg-primary);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   line-height: 1.6;
   min-height: 100vh;
   overflow: hidden;
 }
 
+h1, h2, h3, h4 {
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
 ::selection {
-  background: var(--accent-1);
-  color: var(--bg-primary);
+  background: rgba(255, 107, 107, 0.35);
+  color: var(--text-primary);
+}
+
+/* Keyboard focus is always visible */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-1);
+  outline-offset: 2px;
 }
 
 ::-webkit-scrollbar {
@@ -78,7 +118,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--text-faint);
 }
 
 .setup-screen {
