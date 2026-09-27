@@ -430,7 +430,7 @@ h1, h2, h3, h4 {
 }
 
 .code-block code {
-  flex: 1 1 220px;
+  flex: 1 1 170px;
   min-width: 0;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
@@ -444,6 +444,7 @@ h1, h2, h3, h4 {
 .copy-btn {
   position: relative;
   flex-shrink: 0;
+  margin-left: auto;
   min-height: 40px;
   padding: 0 14px;
   background: var(--bg-tertiary);
@@ -2141,6 +2142,10 @@ h1, h2, h3, h4 {
   .message-footer,
   .message.user .message-footer {
     padding-left: 0;
+  }
+
+  .message-content pre code {
+    font-size: 0.75rem;
   }
 
   .input-area {
